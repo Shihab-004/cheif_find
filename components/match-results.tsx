@@ -1,12 +1,26 @@
-import type { MatchedChef } from "@/types/chef";
+import type { MatchedChef, MatchResponseSource } from "@/types/chef";
 import { ChefCard } from "./chef-card";
+import { LoadingState } from "./loading-state";
 
 type MatchResultsProps = {
   matches: MatchedChef[];
   hasSubmitted: boolean;
+  isLoading: boolean;
+  source?: MatchResponseSource;
+  message?: string;
 };
 
-export function MatchResults({ matches, hasSubmitted }: MatchResultsProps) {
+export function MatchResults({
+  matches,
+  hasSubmitted,
+  isLoading,
+  source,
+  message,
+}: MatchResultsProps) {
+  if (isLoading) {
+    return <LoadingState />;
+  }
+
   if (!hasSubmitted) {
     return (
       <section className="rounded-3xl border border-dashed border-orange-200 bg-white/70 p-8 text-center">
@@ -34,14 +48,28 @@ export function MatchResults({ matches, hasSubmitted }: MatchResultsProps) {
 
   return (
     <section className="space-y-5">
-      <div>
-        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-orange-600">
-          Top Matches
-        </p>
-        <h2 className="mt-2 text-3xl font-bold text-slate-950">
-          Recommended chefs
-        </h2>
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-orange-600">
+            Top Matches
+          </p>
+          <h2 className="mt-2 text-3xl font-bold text-slate-950">
+            Recommended chefs
+          </h2>
+        </div>
+
+        {source && (
+          <span className="w-fit rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.15em] text-orange-700 shadow-sm">
+            {source === "ai" ? "AI matched" : "Fallback matched"}
+          </span>
+        )}
       </div>
+
+      {message && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+          {message}
+        </div>
+      )}
 
       <div className="grid gap-5 lg:grid-cols-3">
         {matches.map((chef) => (

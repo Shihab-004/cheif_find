@@ -7,11 +7,12 @@ import {
   guestOptions,
   mealTypeOptions,
 } from "@/data/form-options";
-import { getTopChefMatches } from "@/lib/match-chefs";
 import type {
   CustomerFormValues,
   CustomerPreferences,
   MatchedChef,
+  MatchChefsResponse,
+  MatchResponseSource,
 } from "@/types/chef";
 import { ErrorMessage } from "./error-message";
 import { MatchResults } from "./match-results";
@@ -31,6 +32,9 @@ export function CustomerForm() {
   const [form, setForm] = useState<CustomerFormValues>(initialForm);
   const [matches, setMatches] = useState<MatchedChef[]>([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [source, setSource] = useState<MatchResponseSource>();
+  const [infoMessage, setInfoMessage] = useState("");
   const [error, setError] = useState("");
 
   const isFormValid = Boolean(
@@ -44,7 +48,7 @@ export function CustomerForm() {
     }));
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!isFormValid) {
@@ -60,11 +64,46 @@ export function CustomerForm() {
       specialRequest: form.specialRequest,
     };
 
-    const topMatches = getTopChefMatches(preferences);
-
-    setMatches(topMatches);
+    setIsLoading(true);
     setHasSubmitted(true);
+    setMatches([]);
+    setSource(undefined);
+    setInfoMessage("");
     setError("");
+
+    try {
+      const response = await fetch("/api/match-chefs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(preferences),
+      });
+
+      const data = (await response.json()) as
+        | MatchChefsResponse
+        | { error: string };
+
+      if (!response.ok || "error" in data) {
+        throw new Error(
+          "error" in data ? data.error : "Something went wrong.",
+        );
+      }
+
+      setMatches(data.matches);
+      setSource(data.source);
+      setInfoMessage(data.message ?? "");
+    } catch (requestError) {
+      const message =
+        requestError instanceof Error
+          ? requestError.message
+          : "Something went wrong while matching chefs.";
+
+      setError(message);
+      setMatches([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -181,15 +220,22 @@ export function CustomerForm() {
           <ErrorMessage message={error} />
 
           <button
-            type="submit"
-            className="w-full rounded-2xl bg-orange-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-200"
-          >
-            Find matching chefs
-          </button>
+  type="submit"
+  disabled={isLoading}
+  className="w-full rounded-2xl bg-orange-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-orange-700 focus:outline-none focus:ring-4 focus:ring-orange-200 disabled:cursor-not-allowed disabled:bg-orange-300"
+>
+  {isLoading ? "Matching chefs..." : "Find matching chefs"}
+</button>
         </div>
       </form>
 
-      <MatchResults matches={matches} hasSubmitted={hasSubmitted} />
+      <MatchResults
+        matches={matches}
+        hasSubmitted={hasSubmitted}
+        isLoading={isLoading}
+        source={source}
+        message={infoMessage}
+      />
     </div>
   );
 }
