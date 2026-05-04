@@ -1,4 +1,4 @@
-# ChefFind — AI Chef Matching
+# ChefFind : AI Chef Matching
 
 > Find your perfect home chef in seconds, powered by Google Gemini AI.
 
