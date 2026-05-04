@@ -12,8 +12,8 @@ Built as a developer interview task to demonstrate practical frontend developmen
 
 | | |
 |---|---|
-| **Live Demo** | [Add your live URL here] |
-| **GitHub Repo** | [Add your GitHub URL here] |
+| **Live Demo** | https://cheif-find.vercel.app/ |
+| **GitHub Repo** | https://github.com/Shihab-004/cheif_find |
 
 ---
 
