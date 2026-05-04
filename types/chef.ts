@@ -22,6 +22,7 @@ export type CustomerFormValues = {
 export type Chef = {
   id: string;
   name: string;
+  image: string;
   cuisineSpecialties: Cuisine[];
   experienceYears: number;
   specialties: string[];

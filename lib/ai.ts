@@ -208,12 +208,14 @@ export async function getAiChefMatches(
   );
 
   if (!response.ok) {
-    const errorText = await response.text();
+  const errorText = await response.text();
 
-    throw new Error(
-      `Gemini API failed with status ${response.status}: ${errorText}`,
-    );
-  }
+  console.error("Gemini API failed");
+  console.error("Status:", response.status);
+  console.error("Body:", errorText);
+
+  throw new Error(`Gemini API failed with status ${response.status}`);
+}
 
   const data = (await response.json()) as GeminiResponse;
   const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
